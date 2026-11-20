@@ -125,6 +125,9 @@ Additional calculations such as *Average Sales per Order*, *Average Sales by Cat
 ---
 
 ## 6. Stage 3: Pivot Tables
+<img width="940" height="861" alt="Power Pivot 3" src="https://github.com/user-attachments/assets/4cc2e8a8-b78d-4d78-a6a7-575c9052c192" />
+<img width="620" height="1600" alt="Power Pivot 2" src="https://github.com/user-attachments/assets/bbecdd8f-02b8-4278-85ab-9c51799ae741" />
+<img width="1001" height="481" alt="Power Pivot 1" src="https://github.com/user-attachments/assets/57306713-c4f8-4910-95f3-b0a9a5af82c6" />
 
 Pivot Tables connected to the Data Model feed every chart on the dashboard:
 
@@ -143,6 +146,8 @@ Pivot Tables connected to the Data Model feed every chart on the dashboard:
 ---
 
 ## 7. Stage 4: Dashboard
+
+<img width="1600" height="725" alt="Dashboard" src="https://github.com/user-attachments/assets/23020094-a0bf-4463-8e14-b077107c3a00" />
 
 The **Elite Shipping Dashboard** is built entirely with Excel Pivot Charts.
 
@@ -169,7 +174,6 @@ The **Elite Shipping Dashboard** is built entirely with Excel Pivot Charts.
 7. Monthly Total Sales vs Total Orders (column + line)
 8. Total Sales by Category (pie)
 
-![Dashboard](images/dashboard.png)
 
 ---
 
