@@ -1,0 +1,75 @@
+Applied Steps for Customers sheet
+
+let
+    Source = Csv.Document(File.Contents("C:\Users\Lenovo\Desktop\New folder\Session 8\Project 2\Customers.csv"),[Delimiter=",", Columns=3, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Use First Row as Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Change Type" = Table.TransformColumnTypes(#"Use First Row as Headers",{{"CustomerID", Int64.Type}, {"CustomerName", type text}, {"Region", type text}}),
+    #"Capitalized Each Word" = Table.TransformColumns(#"Change Type",{{"CustomerName", Text.Proper, type text}}),
+    #"Trimmed Text" = Table.TransformColumns(#"Capitalized Each Word",{{"CustomerName", Text.Trim, type text}}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Trimmed Text",{{"Region", type text}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Changed Type"," ","",Replacer.ReplaceText,{"Region"}),
+    #"Trimmed Text1" = Table.TransformColumns(#"Replaced Value",{{"Region", Text.Trim, type text}}),
+    #"Capitalized Each Word1" = Table.TransformColumns(#"Trimmed Text1",{{"Region", Text.Proper, type text}})
+in
+    #"Capitalized Each Word1"
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Applied Steps for Products sheet
+
+let
+    Source = Csv.Document(File.Contents("C:\Users\Lenovo\Desktop\New folder\Session 8\Project 2\Products.csv"),[Delimiter=",", Columns=4, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+    #"Use First Row as Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Change Type" = Table.TransformColumnTypes(#"Use First Row as Headers",{{"ProductID", Int64.Type}, {"ProductName", type text}, {"Category", type text}, {"Price", type text}}),
+    #"Trimmed Text" = Table.TransformColumns(#"Change Type",{{"ProductName", Text.Trim, type text}}),
+    #"Capitalized Each Word" = Table.TransformColumns(#"Trimmed Text",{{"ProductName", Text.Proper, type text}}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Capitalized Each Word",{{"Category", type text}}),
+    #"Trimmed Text1" = Table.TransformColumns(#"Changed Type",{{"Category", Text.Trim, type text}}),
+    #"Capitalized Each Word1" = Table.TransformColumns(#"Trimmed Text1",{{"Category", Text.Proper, type text}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Capitalized Each Word1","$","",Replacer.ReplaceText,{"Price"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","Two Hundred","200",Replacer.ReplaceText,{"Price"}),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Replaced Value1",{{"Price", Currency.Type}})
+in
+    #"Changed Type1"
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Applied Steps for Orders sheets
+
+let
+    Source = Folder.Files("C:\Users\Lenovo\Desktop\New folder\Session 8\Project 2\Orders"),
+    #"Filtered Hidden Files1" = Table.SelectRows(Source, each [Attributes]?[Hidden]? <> true),
+    #"Invoke Custom Function1" = Table.AddColumn(#"Filtered Hidden Files1", "Transform File", each #"Transform File"([Content])),
+    #"Renamed Columns1" = Table.RenameColumns(#"Invoke Custom Function1", {"Name", "Source.Name"}),
+    #"Removed Other Columns1" = Table.SelectColumns(#"Renamed Columns1", {"Source.Name", "Transform File"}),
+    #"Expanded Table Column1" = Table.ExpandTableColumn(#"Removed Other Columns1", "Transform File", Table.ColumnNames(#"Transform File"(#"Sample File"))),
+    #"Changed Type" = Table.TransformColumnTypes(#"Expanded Table Column1",{{"OrderID", Int64.Type}, {"CustomerID", Int64.Type}, {"ProductID", Int64.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type", each [ProductID] <> null and [ProductID] <> ""),
+    #"Changed Type1" = Table.TransformColumnTypes(#"Filtered Rows",{{"Quantity", Int64.Type}}),
+    #"Filtered Rows1" = Table.SelectRows(#"Changed Type1", each [Quantity] <> null and [Quantity] <> ""),
+    #"Replaced Value" = Table.ReplaceValue(#"Filtered Rows1","/","-",Replacer.ReplaceText,{"OrderDate"}),
+    #"Split Column by Delimiter" = Table.SplitColumn(#"Replaced Value", "OrderDate", Splitter.SplitTextByDelimiter("-", QuoteStyle.Csv), {"OrderDate.1", "OrderDate.2", "OrderDate.3"}),
+    #"Changed Type2" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"OrderDate.1", Int64.Type}, {"OrderDate.2", Int64.Type}, {"OrderDate.3", Int64.Type}}),
+    #"Reordered Columns" = Table.ReorderColumns(#"Changed Type2",{"Source.Name", "OrderID", "CustomerID", "ProductID", "Quantity", "OrderDate.1", "OrderDate.2", "OrderDate.3"}),
+    #"Added Conditional Column" = Table.AddColumn(#"Reordered Columns", "Custom", each if [OrderDate.1] > 31 then [OrderDate.1] else if [OrderDate.3] > 31 then [OrderDate.3] else [OrderDate.1]),
+    #"Duplicated Column" = Table.DuplicateColumn(#"Added Conditional Column", "Source.Name", "Source.Name - Copy"),
+    #"Extracted Text Between Delimiters" = Table.TransformColumns(#"Duplicated Column", {{"Source.Name - Copy", each Text.BetweenDelimiters(_, "_", "."), type text}}),
+    #"Changed Type3" = Table.TransformColumnTypes(#"Extracted Text Between Delimiters",{{"Source.Name - Copy", Int64.Type}}),
+    #"Renamed Columns" = Table.RenameColumns(#"Changed Type3",{{"Source.Name - Copy", "Month"}}),
+    #"Changed Type4" = Table.TransformColumnTypes(#"Renamed Columns",{{"Custom", Int64.Type}}),
+    #"Renamed Columns2" = Table.RenameColumns(#"Changed Type4",{{"Custom", "Year"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns2",{"OrderID"}),
+    #"Added Index" = Table.AddIndexColumn(#"Removed Columns", "Index", 1, 1, Int64.Type),
+    #"Renamed Columns3" = Table.RenameColumns(#"Added Index",{{"Index", "Order ID"}}),
+    #"Reordered Columns1" = Table.ReorderColumns(#"Renamed Columns3",{"Source.Name", "Order ID", "CustomerID", "ProductID", "Quantity", "OrderDate.1", "OrderDate.2", "OrderDate.3", "Year", "Month"}),
+    #"Added Custom" = Table.AddColumn(#"Reordered Columns1", "Day", each if [OrderDate.1]<=31 and [OrderDate.1]<>[Month] then [OrderDate.1]
+else if [OrderDate.2]<=31 and [OrderDate.2]<>[Month] then [OrderDate.2]
+else if [OrderDate.3]<=31 and [OrderDate.3]<>[Month] then [OrderDate.3]
+else
+[Month]),
+    #"Removed Columns1" = Table.RemoveColumns(#"Added Custom",{"OrderDate.1", "OrderDate.2", "OrderDate.3"}),
+    #"Inserted Merged Column" = Table.AddColumn(#"Removed Columns1", "Order Date", each Text.Combine({Text.From([Day], "en-GB"), Text.From([Month], "en-GB"), Text.From([Year], "en-GB")}, "-"), type text),
+    #"Changed Type5" = Table.TransformColumnTypes(#"Inserted Merged Column",{{"Order Date", type date}}),
+    #"Removed Columns2" = Table.RemoveColumns(#"Changed Type5",{"Year", "Month", "Day"})
+in
+    #"Removed Columns2"
